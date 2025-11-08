@@ -1,0 +1,8 @@
+//
+// Created by polis on 26.10.2025.
+//
+
+#ifndef POLYBANK_BANK_AUTHFILTER_H
+#define POLYBANK_BANK_AUTHFILTER_H
+
+#endif //POLYBANK_BANK_AUTHFILTER_H
