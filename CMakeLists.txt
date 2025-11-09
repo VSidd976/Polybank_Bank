@@ -30,7 +30,6 @@ CPMAddPackage(
     GIT_TAG 7.10.1
 )
 
-set(CONTROLLERS_NAME "controllers")
 add_subdirectory(src)
 add_subdirectory(inc)
 add_subdirectory(app)

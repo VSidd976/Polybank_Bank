@@ -1,1 +1,1 @@
-target_include_directories(${CONTROLLERS_NAME} PUBLIC ./)
+target_include_directories(controllers PUBLIC ./)

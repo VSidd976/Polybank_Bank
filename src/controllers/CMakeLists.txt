@@ -4,6 +4,6 @@ set(CONTROLLERS_SOURCES
         DepositController.cc
 )
 
-add_library(${CONTROLLERS_NAME} STATIC ${CONTROLLERS_SOURCES})
+add_library(controllers STATIC ${CONTROLLERS_SOURCES})
 
-target_link_libraries(${CONTROLLERS_NAME} PUBLIC Crow requests responses utils services infra filters)
+target_link_libraries(controllers PUBLIC Crow requests responses utils services infra filters)

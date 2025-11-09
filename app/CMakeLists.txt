@@ -5,7 +5,7 @@ target_link_libraries(${EXECUTABLE_NAME}
         Crow
         nlohmann_json
         -Wl,--whole-archive
-            ${CONTROLLERS_NAME}
+            controllers
             requests
             responses
             utils
@@ -15,9 +15,3 @@ target_link_libraries(${EXECUTABLE_NAME}
             infra
         -Wl,--no-whole-archive
 )
-
-# configure_file(
-#         ${CMAKE_SOURCE_DIR}/config.json
-#         ${CMAKE_CURRENT_BINARY_DIR}/config.json
-#         COPYONLY
-# )
