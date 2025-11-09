@@ -1,8 +1,18 @@
-//
-// Created by polis on 26.10.2025.
-//
+#pragma once
+#include "ClientsRepository.h"
+#include "VerifyCredentialsResponse.h"
+#include "VerifyCredentialsRequest.h"
+#include "AppContext.h"
+#include "JwtUtils.h"
 
-#ifndef POLYBANK_BANK_AUTHSERVICE_H
-#define POLYBANK_BANK_AUTHSERVICE_H
+class AuthService {
+public:
+    explicit AuthService();
 
-#endif //POLYBANK_BANK_AUTHSERVICE_H
+    VerifyCredentialsResponse verify(const VerifyCredentialsRequest& dto);
+    bool isVerifiedToken(const string& token);
+
+private:
+    ClientsRepository& _repo;
+
+};

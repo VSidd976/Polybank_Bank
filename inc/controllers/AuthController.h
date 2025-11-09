@@ -1,8 +1,19 @@
-//
-// Created by polis on 26.10.2025.
-//
+#pragma once
+#include "VerifyCredentialsRequest.h"
+#include "AuthService.h"
+#include "AuthMiddleware.h"
+#include "AppContext.h"
+#include "BaseController.h"
+#include "crow.h"
+using namespace std;
+using namespace crow;
 
-#ifndef POLYBANK_BANK_AUTHCONTROLLER_H
-#define POLYBANK_BANK_AUTHCONTROLLER_H
+class AuthController : public BaseController<AuthService> {
+public:
+    explicit AuthController(App<AuthMiddleware>&);
 
-#endif //POLYBANK_BANK_AUTHCONTROLLER_H
+    void registerRoutes() override;
+
+private:
+    response verifyCredentials(const request&);
+};

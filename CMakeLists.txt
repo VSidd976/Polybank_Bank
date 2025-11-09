@@ -9,6 +9,28 @@ set(EXECUTABLE_NAME "Executable")
 set(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
 include(CPM)
 
+CPMAddPackage(
+    NAME jwt-cpp
+    GITHUB_REPOSITORY Thalhammer/jwt-cpp
+    VERSION 0.7.1
+)
+CPMAddPackage(
+    NAME Crow
+    GITHUB_REPOSITORY CrowCpp/Crow
+    VERSION 1.3.0
+)
+CPMAddPackage(
+    NAME nlohmann_json
+    GITHUB_REPOSITORY nlohmann/json
+    VERSION 3.12.0
+)
+CPMAddPackage(
+    NAME libpqxx
+    GITHUB_REPOSITORY jtv/libpqxx
+    GIT_TAG 7.10.1
+)
+
+set(CONTROLLERS_NAME "controllers")
 add_subdirectory(src)
 add_subdirectory(inc)
 add_subdirectory(app)

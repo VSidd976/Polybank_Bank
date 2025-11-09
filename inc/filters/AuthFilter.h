@@ -1,8 +1,10 @@
-//
-// Created by polis on 26.10.2025.
-//
+// #pragma once
+// #include <drogon/drogon.h>
+// using namespace drogon;
 
-#ifndef POLYBANK_BANK_AUTHFILTER_H
-#define POLYBANK_BANK_AUTHFILTER_H
-
-#endif //POLYBANK_BANK_AUTHFILTER_H
+// class AuthFilter : public HttpFilter<AuthFilter> {
+// public:
+//     void doFilter(const HttpRequestPtr& req,
+//         FilterCallback&& fcb,
+//         FilterChainCallback&& fccb) override;
+// };
