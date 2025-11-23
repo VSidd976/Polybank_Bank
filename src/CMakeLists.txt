@@ -1,0 +1,7 @@
+add_subdirectory(controllers)
+add_subdirectory(dtos)
+add_subdirectory(utils)
+add_subdirectory(middlewares)
+add_subdirectory(repositories)
+add_subdirectory(services)
+add_subdirectory(infra)
