@@ -1,0 +1,860 @@
+openapi: 3.0.3
+info:
+  title: Bank API
+  version: 1.1.0
+  description: >
+    API for ATM/bank operations: authentication, account management,
+    deposits, credits and automation daemon rules.
+
+servers:
+  - url: http://16.170.29.95:18973
+    description: crow server
+
+paths:
+  /api/auth/verify-credentials:
+    post:
+      summary: Verify card and PIN credentials and issue token
+      tags: [Auth]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VerifyCredentialsRequest'
+      responses:
+        '200':
+          description: Valid credentials, token issued
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VerifyCredentialsResponse'
+        '401':
+          description: Invalid card or PIN
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/auth/verify-card:
+    post:
+      summary: Verify if card exists
+      tags: [Auth]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VerifyCardRequest'
+      responses:
+        '200':
+          description: Card verification result
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VerifyCardResponse'
+        '400':
+          description: Invalid request payload
+
+  /api/account:
+    get:
+      summary: Get info about current account
+      tags: [Account]
+      security:
+        - bearerAuth: [ ]
+      responses:
+        '200':
+          description: Current account info
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AccountResponse'
+        '401':
+          description: Unauthorized or card not bound to account
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/account/put:
+    post:
+      summary: Put money to current account (manual operation)
+      tags: [Account]
+      security:
+        - bearerAuth: [ ]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AccountRequest'
+      responses:
+        '200':
+          description: Money added successfully
+        '400':
+          description: Business error (e.g. negative amount)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Unauthorized
+
+  /api/account/take:
+    post:
+      summary: Withdraw money from current account (manual operation)
+      tags: [Account]
+      security:
+        - bearerAuth: [ ]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AccountRequest'
+      responses:
+        '200':
+          description: Money withdrawn successfully
+        '400':
+          description: Business error (e.g. insufficient funds)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Unauthorized
+
+  /api/account/transfer:
+    post:
+      summary: Transfer money from current account to another card
+      tags: [Account]
+      security:
+        - bearerAuth: [ ]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TransferMoneyRequest'
+      responses:
+        '200':
+          description: Transfer done
+        '400':
+          description: Business error (invalid card, insufficient funds, etc.)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Unauthorized
+
+  /api/deposit/products:
+    get:
+      summary: List available deposit products
+      tags: [Deposits]
+      responses:
+        '200':
+          description: List of deposit products
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DepositProductsResponse'
+
+  /api/deposit:
+    get:
+      summary: List deposits for current account
+      tags: [Deposits]
+      security:
+        - bearerAuth: [ ]
+      responses:
+        '200':
+          description: List of deposits
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DepositsResponse'
+        '401':
+          description: Unauthorized
+
+  /api/deposit/{id}:
+    get:
+      summary: Get one deposit by id for current account
+      tags: [Deposits]
+      security:
+        - bearerAuth: [ ]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Deposit details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DepositResponse'
+        '400':
+          description: Business error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Unauthorized
+        '404':
+          description: Deposit not found
+
+  /api/deposit/put:
+    post:
+      summary: Open a new deposit
+      tags: [Deposits]
+      security:
+        - bearerAuth: [ ]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OpenDepositRequest'
+      responses:
+        '200':
+          description: Deposit created
+        '400':
+          description: Business error (e.g. insufficient funds)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Unauthorized
+
+  /api/deposit/take:
+    post:
+      summary: Close a deposit (and pay principal + interest)
+      tags: [Deposits]
+      security:
+        - bearerAuth: [ ]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CloseDepositRequest'
+      responses:
+        '200':
+          description: Deposit closed
+        '400':
+          description: Business error (deposit not available for closing etc.)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Unauthorized
+
+  /api/credit/products:
+    get:
+      summary: List available credit products
+      tags: [Credits]
+      responses:
+        '200':
+          description: List of credit products
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreditProductsResponse'
+
+  /api/credit:
+    get:
+      summary: List credits for current account
+      tags: [Credits]
+      security:
+        - bearerAuth: [ ]
+      responses:
+        '200':
+          description: List of credits
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreditsResponse'
+        '401':
+          description: Unauthorized
+
+  /api/credit/{id}:
+    get:
+      summary: Get credit by id for current account
+      tags: [Credits]
+      security:
+        - bearerAuth: [ ]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Credit details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreditResponse'
+        '400':
+          description: Business error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Unauthorized
+        '404':
+          description: Credit not found
+
+  /api/credit/take:
+    post:
+      summary: Take new credit
+      tags: [Credits]
+      security:
+        - bearerAuth: [ ]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TakeCreditRequest'
+      responses:
+        '200':
+          description: Credit issued
+        '400':
+          description: Business error (e.g. limit exceeded)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Unauthorized
+
+  /api/credit/pay:
+    post:
+      summary: Pay part or all of credit
+      tags: [Credits]
+      security:
+        - bearerAuth: [ ]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PayCreditRequest'
+      responses:
+        '200':
+          description: Payment accepted
+        '400':
+          description: Business error (e.g. not enough balance)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Unauthorized
+
+  /api/daemon/credit-protection:
+    post:
+      summary: Create credit protection rule
+      tags: [Daemon]
+      security:
+        - bearerAuth: [ ]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateCreditProtectionRequest'
+      responses:
+        '200':
+          description: Credit protection rule created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreditProtectionResponse'
+        '400':
+          description: Business error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Unauthorized
+
+    get:
+      summary: List credit protection rules for current account
+      tags: [Daemon]
+      security:
+        - bearerAuth: [ ]
+      responses:
+        '200':
+          description: List of credit protection rules
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/CreditProtectionResponse'
+        '401':
+          description: Unauthorized
+
+  /api/daemon/credit-protection/{id}:
+    delete:
+      summary: Delete credit protection rule
+      tags: [Daemon]
+      security:
+        - bearerAuth: [ ]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Rule deleted
+        '400':
+          description: Business error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Unauthorized
+        '404':
+          description: Rule not found
+
+  /api/daemon/leftover-rule:
+    post:
+      summary: Create leftover rule
+      tags: [Daemon]
+      security:
+        - bearerAuth: [ ]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateLeftoverRuleRequest'
+      responses:
+        '200':
+          description: Rule created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LeftoverRuleResponse'
+        '400':
+          description: Business error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Unauthorized
+
+    get:
+      summary: List leftover rules
+      tags: [Daemon]
+      security:
+        - bearerAuth: [ ]
+      responses:
+        '200':
+          description: List of leftover rules
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/LeftoverRuleResponse'
+        '401':
+          description: Unauthorized
+
+  /api/daemon/leftover-rule/{id}:
+    delete:
+      summary: Delete leftover rule
+      tags: [Daemon]
+      security:
+        - bearerAuth: [ ]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Rule deleted
+        '400':
+          description: Business error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Unauthorized
+        '404':
+          description: Rule not found
+
+  /api/daemon/auto-transfer:
+    post:
+      summary: Create auto transfer rule
+      tags: [Daemon]
+      security:
+        - bearerAuth: [ ]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateAutoTransferRequest'
+      responses:
+        '200':
+          description: Auto transfer rule created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AutoTransfer'
+        '400':
+          description: Business error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Unauthorized
+
+    get:
+      summary: List auto transfer rules
+      tags: [Daemon]
+      security:
+        - bearerAuth: [ ]
+      responses:
+        '200':
+          description: List of auto transfer rules
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/AutoTransfer'
+        '401':
+          description: Unauthorized
+
+  /api/daemon/auto-transfer/{id}:
+    delete:
+      summary: Delete auto transfer rule
+      tags: [Daemon]
+      security:
+        - bearerAuth: [ ]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Rule deleted
+        '400':
+          description: Business error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Unauthorized
+        '404':
+          description: Rule not found
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+      required: [error]
+
+    VerifyCredentialsRequest:
+      type: object
+      properties:
+        card:
+          type: string
+        pin:
+          type: string
+      required: [card, pin]
+
+    VerifyCredentialsResponse:
+      type: object
+      properties:
+        token:
+          type: string
+          format: jwt
+      required: [token]
+
+    VerifyCardRequest:
+      type: object
+      properties:
+        card:
+          type: string
+      required: [card]
+
+    VerifyCardResponse:
+      type: object
+      properties:
+        valid:
+          type: boolean
+      required: [valid]
+
+    AccountResponse:
+      type: object
+      properties:
+        full_name:
+          type: string
+        balance:
+          type: number
+      required: [full_name, balance]
+
+    AccountRequest:
+      type: object
+      properties:
+        amount:
+          type: number
+      required: [amount]
+
+    TransferMoneyRequest:
+      type: object
+      properties:
+        to:
+          type: string
+        amount:
+          type: number
+      required: [to, amount]
+
+    DepositProduct:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        term_months:
+          type: integer
+        interest_rate:
+          type: number
+      required: [id, name, term_months, interest_rate]
+
+    DepositProductsResponse:
+      type: object
+      properties:
+        deposit_products:
+          type: array
+          items:
+            $ref: '#/components/schemas/DepositProduct'
+      required: [deposit_products]
+
+    DepositResponse:
+      type: object
+      properties:
+        id:
+          type: integer
+        account_id:
+          type: integer
+        product_id:
+          type: integer
+        amount:
+          type: number
+        opened_at:
+          type: string
+        closed_at:
+          nullable: true
+      required: [id, account_id, product_id, amount, opened_at, closed_at]
+
+    DepositsResponse:
+      type: object
+      properties:
+        deposits:
+          type: array
+          items:
+            $ref: '#/components/schemas/DepositResponse'
+      required: [deposits]
+
+    OpenDepositRequest:
+      type: object
+      properties:
+        product_id:
+          type: integer
+        amount:
+          type: number
+      required: [product_id, amount]
+
+    CloseDepositRequest:
+      type: object
+      properties:
+        deposit_id:
+          type: integer
+      required: [deposit_id]
+
+    CreditProduct:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        term_months:
+          type: integer
+        interest_rate:
+          type: number
+      required: [id, name, term_months, interest_rate]
+
+    CreditProductsResponse:
+      type: object
+      properties:
+        credit_products:
+          type: array
+          items:
+            $ref: '#/components/schemas/CreditProduct'
+      required: [credit_products]
+
+    CreditResponse:
+      type: object
+      properties:
+        id:
+          type: integer
+        account_id:
+          type: integer
+        product_id:
+          type: integer
+        product_name:
+          type: string
+        amount:
+          type: number
+        interest_accrued:
+          type: number
+        remaining_amount:
+          type: number
+        opened_at:
+          type: string
+        closed_at:
+          nullable: true
+      required:
+        [id, account_id, product_id, product_name,
+         amount, interest_accrued, remaining_amount,
+         opened_at, closed_at]
+
+    CreditsResponse:
+      type: object
+      properties:
+        credits:
+          type: array
+          items:
+            $ref: '#/components/schemas/CreditResponse'
+      required: [credits]
+
+    TakeCreditRequest:
+      type: object
+      properties:
+        product_id:
+          type: integer
+        amount:
+          type: number
+      required: [product_id, amount]
+
+    PayCreditRequest:
+      type: object
+      properties:
+        credit_id:
+          type: integer
+        amount:
+          type: number
+      required: [credit_id, amount]
+
+    CreateCreditProtectionRequest:
+      type: object
+      properties:
+        backup_card:
+          type: string
+        min_balance:
+          type: number
+      required: [backup_card, min_balance]
+
+    CreditProtectionResponse:
+      type: object
+      properties:
+        id:
+          type: integer
+        backup_card:
+          type: string
+        min_balance:
+          type: number
+        active:
+          type: boolean
+      required: [id, backup_card, min_balance, active]
+
+    CreateLeftoverRuleRequest:
+      type: object
+      properties:
+        trg_card:
+          type: string
+        threshold:
+          type: number
+      required: [trg_card, threshold]
+
+    LeftoverRuleResponse:
+      type: object
+      properties:
+        id:
+          type: integer
+        trg_card:
+          type: string
+        threshold:
+          type: number
+        active:
+          type: boolean
+      required: [id, trg_card, threshold, active]
+
+    CreateAutoTransferRequest:
+      type: object
+      properties:
+        trg_card:
+          type: string
+        amount:
+          type: number
+        periodicity:
+          type: string
+          enum: [once, weekly, monthly, yearly]
+        next_run_date:
+          type: string
+          format: date
+      required: [trg_account_id, amount, periodicity, next_run_date]
+
+    AutoTransfer:
+      type: object
+      properties:
+        id:
+          type: integer
+        trg_card:
+          type: string
+        amount:
+          type: number
+        periodicity:
+          type: string
+        next_run_date:
+          type: string
+          format: date
+        active:
+          type: boolean
+      required: [id, trg_card, amount, periodicity, next_run_date, active]
