@@ -3,8 +3,8 @@ info:
   title: Bank API
   version: 1.1.0
   description: >
-    API for ATM/bank operations: authentication, account management,
-    deposits, credits and automation daemon rules.
+    API for ATM operations: authentication, account management,
+    deposits, credits and automation daemon rules
 
 servers:
   - url: http://16.170.29.95:18973
@@ -674,13 +674,18 @@ components:
           type: integer
         product_id:
           type: integer
+        product_name:
+          type: string
         amount:
           type: number
+        end_dt:
+          type: string
         opened_at:
           type: string
         closed_at:
           nullable: true
-      required: [id, account_id, product_id, amount, opened_at, closed_at]
+      required: [id, account_id, product_id, product_name,
+        amount, end_dt, opened_at, closed_at]
 
     DepositsResponse:
       type: object

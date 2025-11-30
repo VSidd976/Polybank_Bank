@@ -15,7 +15,7 @@ CreditsResponse CreditsRepository::findByAccount(int accountId) {
                 coalesce(to_char(c.closed_at, 'YYYY-MM-DD"T"HH24:MI:SSZ'), '') as closed_at
             from credits c
             join credit_products cp on cp.id = c.product_id
-            where c.account_id = $1
+            where c.account_id = $1 and c.closed_at is null
             order by c.opened_at desc
         )SQL",
         pqxx::params(accountId)
@@ -49,7 +49,7 @@ optional<CreditResponse> CreditsRepository::findById(int accountId, int creditId
                 coalesce(to_char(c.closed_at, 'YYYY-MM-DD"T"HH24:MI:SSZ'), '') as closed_at
             from credits c
             join credit_products cp on cp.id = c.product_id
-            where id = $1 and c.account_id = $2
+            where c.id = $1 and c.account_id = $2
             limit 1
         )SQL",
         pqxx::params(creditId, accountId)

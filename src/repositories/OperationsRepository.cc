@@ -1,4 +1,5 @@
 #include "OperationsRepository.h"
+#include <iostream>
 
 OperationsRepository::OperationsRepository()
     : _db(AppContext::get<Database>())
@@ -115,7 +116,8 @@ bool OperationsRepository::addOperation(
         );
         tx.commit();
         return true;
-    } catch (const exception&) {
+    } catch (const exception& ex) {
+        std::cout << ex.what() << std::endl;
         return false;
     }
 }

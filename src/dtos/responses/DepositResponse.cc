@@ -5,7 +5,9 @@ nlohmann::json DepositResponse::toJson() const {
         {"id", id},
         {"account_id", accountId},
         {"product_id", productId},
+        {"product_name", productName},
         {"amount", amount},
+        {"end_dt", endDt},
         {"opened_at", openedAt}
     };
 

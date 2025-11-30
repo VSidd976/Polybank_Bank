@@ -11,10 +11,11 @@ DepositsResponse DepositsRepository::findByAccount(int accountId) {
             select
                 d.id, d.account_id, d.product_id, dp.name as product_name, amount,
                 to_char(d.opened_at, 'YYYY-MM-DD"T"HH24:MI:SSZ') as opened_at,
+                to_char(d.end_dt, 'YYYY-MM-DD"T"HH24:MI:SSZ') as end_dt,
                 coalesce(to_char(d.closed_at, 'YYYY-MM-DD"T"HH24:MI:SSZ'), '') as closed_at
             from deposits d
             join deposit_products dp on dp.id = d.product_id
-            where d.account_id = $1
+            where d.account_id = $1 and d.closed_at is null
             order by d.opened_at desc
         )SQL",
         pqxx::params(accountId)
@@ -28,6 +29,7 @@ DepositsResponse DepositsRepository::findByAccount(int accountId) {
             row["product_id"].as<int>(),
             row["product_name"].as<string>(),
             row["amount"].as<double>(),
+            row["end_dt"].as<string>(),
             row["opened_at"].as<string>(),
             row["closed_at"].as<string>()
         });
@@ -42,10 +44,11 @@ optional<DepositResponse> DepositsRepository::findById(int accountId, int deposi
             select
                 d.id, d.account_id, d.product_id, dp.name as product_name, d.amount,
                 to_char(d.opened_at, 'YYYY-MM-DD"T"HH24:MI:SSZ') as opened_at,
+                to_char(d.end_dt, 'YYYY-MM-DD"T"HH24:MI:SSZ') as end_dt,
                 coalesce(to_char(d.closed_at, 'YYYY-MM-DD"T"HH24:MI:SSZ'), '') as closed_at
             from deposits d
             join deposit_products dp on dp.id = d.product_id
-            where d.id = $1 and d.account_id = $2
+            where d.id = $1 and d.account_id = $2 and d.closed_at is null
             limit 1
         )SQL",
         pqxx::params(depositId, accountId)
@@ -60,6 +63,7 @@ optional<DepositResponse> DepositsRepository::findById(int accountId, int deposi
         row["product_id"].as<int>(),
         row["product_name"].as<string>(),
         row["amount"].as<double>(),
+        row["end_dt"].as<string>(),
         row["opened_at"].as<string>(),
         row["closed_at"].as<string>()
     };

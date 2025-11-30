@@ -28,7 +28,7 @@ using namespace crow;
 using namespace std;
 
 int main() {
-    Config::load(std::string(CMAKE_BINARY_DIR) + "/app/config.json");
+    Config::load("config.json");
 
     JwtUtils::setSecret(Config::jwtSecret);
     JwtUtils::setExpires(Config::jwtExpire);

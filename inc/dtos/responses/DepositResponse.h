@@ -8,6 +8,7 @@ struct DepositResponse {
     int productId;
     string productName;
     double amount;
+    string endDt;
     string openedAt;
     string closedAt;
 

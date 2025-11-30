@@ -1,6 +1,6 @@
 {
   "db_url": "postgresql://<USER>:<PASSWORD>@<HOST>:<PORT>/<DBNAME>",
   "jwt_secret": "your_secret",
-  "jwt_expire_sec": 300,
+  "jwt_expire_sec": 1000,
   "port": 18973
 }
